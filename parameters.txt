@@ -1,0 +1,10 @@
+audio_directory = /Users/bashit.a/Documents/SDNHM/WAV
+output_directory = /Users/bashit.a/Documents/SDNHM/Codes
+sr = 16000 
+fmax = 8000
+n_mels = 128
+dB_thr = -20
+freq_idx = 18
+n_serials = 20
+block = 5
+play_audio = 0
