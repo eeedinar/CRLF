@@ -53,8 +53,8 @@ def signal_detection(filename, sr, fmax, n_mels, dB_thr, freq_idx, n_serials, bl
         img     = librosa.display.specshow(S_dB, x_axis='time', y_axis='mel', sr=sr, fmax=fmax, ax=axs[0])
         img     = librosa.display.specshow(S_dB_thr, x_axis='time', y_axis='mel', sr=sr, fmax=fmax, ax=axs[1])
         img     = librosa.display.specshow(S_closing, x_axis='time', y_axis='mel', sr=sr, fmax=fmax, ax=axs[2])
-        fig.colorbar(img, ax=ax, format='%+2.0f dB')
-        ax.set(title='Mel-frequency spectrogram')
+        fig.colorbar(img, ax=axs[0], format='%+2.0f dB')
+        axs[0].set(title='Mel-frequency spectrogram')
 
     S_block = S_closing[freq_idx,:]  # #np.array([ 0   ,  0  ,   0   ,  0  ,   0  ,   0    , 0  ,   0   ,  0  ,   1  ,   1  ,   1  ,   1   ,  1   ,  0   ,  0   ,  0  ,   0   ,  0  ,   0 ])
     k = np.where( np.insert(np.diff(S_block)!=0, 0, True) )[0]  # insert true first an then find diff to find changes of indices --> array([ 0,  9, 14])
