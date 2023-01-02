@@ -50,21 +50,25 @@ def main(args):
 
     ### create folder for data output
     folder = f"{time.strftime('%Y-%m-%d-%A-%H-%M-%S', time.localtime())}"
-    os.makedirs(folder)
 
     ### reading parameters and setting it to variables
     file = open('parameters.txt','r')
     file.seek(0)
     parameters = file.readlines()
     file.close()
-    shutil.copy2('parameters.txt', os.path.join(folder))     # copy parameters.txt to the folder
 
+    ### set variables from parameters.txt
     for i in range(len(parameters)):
         var, val = parameters[i].split("=")[0].strip() , parameters[i].split("=")[1].strip()
         try:
             globals()[var] = int(val)
         except:
             globals()[var] = val
+
+    ### create folder and copy parameters.txt
+    os.makedirs(os.path.join(output_directory,folder))
+    shutil.copy2('parameters.txt', os.path.join(output_directory,folder))     # copy parameters.txt to the folder
+
     ### look for wav and WAV extensions in the specified directory and produce results.csv file
     files_sorted = cwd_files_search_with('.wav', directory = audio_directory)
     files_sorted.append(cwd_files_search_with('.WAV', directory = audio_directory))
