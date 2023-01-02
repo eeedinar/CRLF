@@ -37,7 +37,7 @@ def flatten(S):
     return S[:1] + flatten(S[1:])
 
 
-def signal_detection(filename, sr, fmax, n_mels, dB_thr, freq_idx, n_serials, block, show_plot=False, show_results=False, play_audio = 0 ):
+def signal_detection(filename, sr, fmax, n_mels, dB_thr, freq_input, n_serials, block, show_plot=False, show_results=False, play_audio = 0 ):
     # f[freq_idx], t[r>n_serials] = signal_detection(filename= filename, sr= sr, fmax=fmax, n_mels=n_mels, dB_thr=dB_thr, freq_idx=freq_idx, n_serials=n_serials, block=block, show_plot=False, show_results=False, play_audio = 0 )
     y, sr  = librosa.load(filename, sr = sr)
     S      = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=n_mels, fmax=fmax, power=2.0,)
@@ -47,6 +47,7 @@ def signal_detection(filename, sr, fmax, n_mels, dB_thr, freq_idx, n_serials, bl
     S_dB_thr = S_dB > dB_thr
     kernel = np.ones((block,block),np.uint8)
     S_closing = cv.morphologyEx(np.uint8(S_dB_thr), cv.MORPH_CLOSE, kernel)
+    freq_idx = np.absolute(f-freq_input).argmin()
 
     if show_plot:
         fig, axs = plt.subplots(ncols=3, nrows=1, sharex=True, sharey=True, figsize=(16,6))
@@ -68,5 +69,6 @@ def signal_detection(filename, sr, fmax, n_mels, dB_thr, freq_idx, n_serials, bl
     if show_results:
         print(f'frequency {f[freq_idx]}, and time {t[r>n_serials]}')
     if play_audio:
+        print('Play audio is on')
         Audio(data=y, rate=sr)
     return f[freq_idx], t[r>n_serials]
