@@ -14,12 +14,13 @@ def compare_groud_truth(output_directory, folder):
     df_col_name_category = 'Category'
     df_col_name_file = 'File'
     df_col_name_call_start = 'Start'
-    frog_type = 'CRLF'
+    frog_type1 = 'CRLF'
+    frog_type2 = 'BOTH'
     gen_comparison_file = 'comparison.csv'
 
     ### read labels.csv, and results.csv files and write comparison.csv file
     df2 = pd.read_csv(gnd_file)                     # read labels file
-    df2 = df2[df2[df_col_name_category]==frog_type]              # filter only CRLF only
+    df2 = df2[(df2[df_col_name_category]==frog_type1 ).values + (df2[df_col_name_category]==frog_type2).values]            # filter only CRLF only
     df2.sort_values(by=[df_col_name_file], inplace=True)      # sort dataframe to be similar with df
     n   = len(np.unique(df2[df_col_name_file].tolist()))      # get unique files 
     X = np.zeros((n,2),dtype=object)
@@ -56,6 +57,7 @@ def main(args):
     file.seek(0)
     parameters = file.readlines()
     file.close()
+    shutil.copy2('parameters.txt', os.path.join(folder))     # copy parameters.txt to the folder
 
     for i in range(len(parameters)):
         var, val = parameters[i].split("=")[0].strip() , parameters[i].split("=")[1].strip()
@@ -73,7 +75,7 @@ def main(args):
     ### Serial Processing - iterate over file and do signal detection
     if args.mode == 'serial':
         for idx, file in enumerate(files_sorted):
-            freq, t = signal_detection(filename = os.path.join(audio_directory, file), sr= sr, fmax=fmax, n_mels=n_mels, dB_thr=dB_thr, freq_idx=freq_idx, n_serials=n_serials, block=block, show_plot=show_plot, show_results=show_results, play_audio=play_audio )
+            freq, t = signal_detection(filename = os.path.join(audio_directory, file), sr= sr, fmax=fmax, n_mels=n_mels, dB_thr=dB_thr, freq_input=freq_input, n_serials=n_serials, block=block, show_plot=show_plot, show_results=show_results, play_audio=play_audio )
             X[idx,0] = file
             X[idx,1] = t  
 
@@ -82,7 +84,7 @@ def main(args):
         with concurrent.futures.ProcessPoolExecutor() as executor:
             
             arg = [os.path.join(audio_directory, file) for file in files_sorted]
-            worker = partial(signal_detection, sr= sr, fmax=fmax, n_mels=n_mels, dB_thr=dB_thr, freq_idx=freq_idx, n_serials=n_serials, block=block, show_plot=show_plot, show_results=show_results, play_audio=play_audio )
+            worker = partial(signal_detection, sr= sr, fmax=fmax, n_mels=n_mels, dB_thr=dB_thr, freq_input=freq_input, n_serials=n_serials, block=block, show_plot=show_plot, show_results=show_results, play_audio=play_audio )
             results = executor.map(worker, arg)
 
             for idx, (file, t) in enumerate(zip(files_sorted, results)):
@@ -94,7 +96,6 @@ def main(args):
     df.columns = ['File', 'Start']
     df.sort_values(by=['File'], inplace=True)
     df.to_csv(os.path.join(output_directory,folder,'results.csv'), index=False)
-    shutil.copy2('parameters.txt', os.path.join(folder))     # copy parameters to the folder
 
     ### log the outcome of this program
     file = open(os.path.join(output_directory,folder,'output.log'), 'w')
@@ -109,7 +110,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     output_directory, folder = main(args)
-    debug = True
+    debug = False
     if debug:
         try:
             compare_groud_truth(output_directory, folder)
